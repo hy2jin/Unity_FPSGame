@@ -7,11 +7,13 @@ public class PlayerFire : MonoBehaviour
     public GameObject firePositon;          // 발사 위치
     public GameObject bombFactory;          // 폭탄 오브젝트
     public float throwPower = 15f;          // 투척 파워
+    public GameObject bulletEffect;         // 총알 이펙트
+    ParticleSystem ps;                      // 파티클 시스템
 
     // Start is called before the first frame update
     void Start()
     {
-        
+        ps = bulletEffect.GetComponent<ParticleSystem>();
     }
 
     // Update is called once per frame
@@ -37,6 +39,12 @@ public class PlayerFire : MonoBehaviour
             Ray ray = new Ray(Camera.main.transform.position, Camera.main.transform.forward);
             // 레이가 부딪힌 대상 저장
             RaycastHit hitInfo = new RaycastHit();
+            // 레이를 발사한 후, 부딪힌 물체가 있으면
+            if (Physics.Raycast(ray, out hitInfo))
+            {
+                bulletEffect.transform.position = hitInfo.point;
+                ps.Play();
+            }
         }
     }
 }
