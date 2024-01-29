@@ -29,6 +29,8 @@ public class EnemyFSM : MonoBehaviour
     public int hp = 30;                 // 적 체력
     int maxHp;                          // 최대 체력
     public Slider hpSlider;             // 체력 슬라이더 변수
+    Animator anim;                      // 애니메이터 변수
+    Quaternion originRot;               // 초기 로테이션 저장
 
 
     // Start is called before the first frame update
@@ -42,7 +44,10 @@ public class EnemyFSM : MonoBehaviour
         cc = GetComponent<CharacterController>();
         // 적 초기 위치 저장
         originPos = transform.position;
+        originRot = transform.rotation;
         maxHp = hp;
+        // 자식 오브젝트의 애니메이터 컴포넌트 할당
+        anim = transform.GetComponentInChildren<Animator>();
     }
 
     // Update is called once per frame
@@ -74,6 +79,8 @@ public class EnemyFSM : MonoBehaviour
         {
             m_State = EnemyState.Move;
             Debug.Log("상태 전환: Idle -> Move");
+            // 이동 애니메이션으로 전환
+            anim.SetTrigger("IdleToMove");
         }
     }
 
@@ -92,6 +99,8 @@ public class EnemyFSM : MonoBehaviour
             Vector3 dir = (player.position - transform.position).normalized;
             // 이동
             cc.Move(dir * moveSpeed * Time.deltaTime);
+            // 플레이어를 향해 방향 전환
+            transform.forward = dir;
         }
        else
        {
@@ -99,6 +108,8 @@ public class EnemyFSM : MonoBehaviour
             Debug.Log("상태 전환: Move -> Attack");
             // 누적 시간을 공격 딜레이 시간만큼 미리 진행(닿자마자 공격해라)
             currentTime = attackDelay;
+            // 공격 대기 애니메이션 실행
+            anim.SetTrigger("MoveToAttackDelay");
         }
     }
 
@@ -116,6 +127,8 @@ public class EnemyFSM : MonoBehaviour
 
                 Debug.Log("공격");
                 currentTime = 0;
+                // 공격 애니메이션 실행
+                anim.SetTrigger("StartAttack");
             }
         }
         // 그렇지 않다면, 이동(Move)
@@ -124,6 +137,8 @@ public class EnemyFSM : MonoBehaviour
             m_State = EnemyState.Move;
             Debug.Log("상태 전환: Attack -> Move");
             currentTime = 0;
+            // 이동 애니메이션 실행
+            anim.SetTrigger("AttackToMove");
         }
     }
 
@@ -136,12 +151,17 @@ public class EnemyFSM : MonoBehaviour
             Vector3 dir = (originPos - transform.position).normalized;
             // 이동
             cc.Move(dir * moveSpeed * Time.deltaTime);
+            // 복귀 지점으로 방향 전환
+            transform.forward = dir;
         }
         else
         {
             transform.position = originPos;
             m_State = EnemyState.Idle;
             Debug.Log("상태 전환: Return -> Idle");
+            // 대기 애니메이션으로 전환
+            anim.SetTrigger("MoveToIdle");
+            transform.rotation = originRot;
         }
     }
 
@@ -152,6 +172,8 @@ public class EnemyFSM : MonoBehaviour
         yield return new WaitForSeconds(0.5f);
         // 이동 상태 전환
         m_State = EnemyState.Move;
+        // 이동 애니메이션 실행
+        anim.SetTrigger("IdleToMove");
     }
 
     void Damaged()
@@ -180,8 +202,10 @@ public class EnemyFSM : MonoBehaviour
         else
         {
             m_State = EnemyState.Die;
-            Die();
             Debug.Log("죽음..");
+            // 죽음 애니메이션 실행
+            anim.SetTrigger("Die");
+            Die();
         }
     }
 
@@ -190,7 +214,7 @@ public class EnemyFSM : MonoBehaviour
         // 캐릭터 컨트롤러 컴포넌트 비활성화
         cc.enabled = false;
         // 2초 대기
-        yield return new WaitForSeconds(2f);
+        yield return new WaitForSeconds(5f);
         // 적 제거
         Destroy(gameObject);
     }

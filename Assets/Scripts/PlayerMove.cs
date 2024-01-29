@@ -15,6 +15,7 @@ public class PlayerMove : MonoBehaviour
     public int hp = 100;            // 플레이어 체력 변수
     int maxHp;                      // 최대 체력
     public Slider hpSlider;         // 체력 슬라이더 변수
+    public GameObject bloodEffect;  // 블러드 효과 이미지
 
     // Start is called before the first frame update
     void Start()
@@ -26,6 +27,12 @@ public class PlayerMove : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
+        // 게임 중 상태에서만 조작
+        if (GameManager.gm.gState != GameManager.GameState.Go)
+        {
+            return;
+        }
+
         // 키보드 입력
         float h = Input.GetAxis("Horizontal");
         float v = Input.GetAxis("Vertical");
@@ -74,6 +81,22 @@ public class PlayerMove : MonoBehaviour
         {
             hp = 0;
         }
+        else
+        {
+            // 체력이 양수일 때 피격 효과 출력
+            StartCoroutine(PlayBloodEffect());
+        }
         Debug.Log("hp: " + hp);
+    }
+
+    // 피격 효과 코루틴 함수
+    IEnumerator PlayBloodEffect()
+    {
+        // 피격 효과 활성화
+        bloodEffect.SetActive(true);
+        // 0.3초 대기
+        yield return new WaitForSeconds(0.3f);
+        // 피격 효과 비활성화
+        bloodEffect.SetActive(false);
     }
 }
