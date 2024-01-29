@@ -25,6 +25,7 @@ public class EnemyFSM : MonoBehaviour
     public int attackPower = 15;        // 적 공격력
     Vector3 originPos;                  // 초기 위치 저장
     public float moveDistance = 20f;    // 이동 가능 범위
+    public int hp = 30;                 // 적 체력
 
     // Start is called before the first frame update
     void Start()
@@ -55,12 +56,6 @@ public class EnemyFSM : MonoBehaviour
                 break;
             case EnemyState.Return:
                 Return();
-                break;
-            case EnemyState.Damaged:
-                // Damaged();
-                break;
-            case EnemyState.Die:
-                // Die();
                 break;
         }
     }
@@ -141,5 +136,63 @@ public class EnemyFSM : MonoBehaviour
             m_State = EnemyState.Idle;
             Debug.Log("상태 전환: Return -> Idle");
         }
+    }
+
+    // 데미지 처리 코루틴 함수
+    IEnumerator DamageProcess()
+    {
+        // 피격 모션만큼 기다림
+        yield return new WaitForSeconds(0.5f);
+        // 이동 상태 전환
+        m_State = EnemyState.Move;
+    }
+
+    void Damaged()
+    {
+        // 피격 코루틴 실행
+        StartCoroutine(DamageProcess());
+    }
+
+    // 데미지 실행 함수
+    public void HitEnemy(int hitPower)
+    {
+        if (m_State == EnemyState.Damaged || m_State == EnemyState.Die)
+        {
+            return;
+        }
+
+        hp -= hitPower;
+        // 적 체력이 0보다 크면 피격
+        if (hp > 0)
+        {
+            m_State = EnemyState.Damaged;
+            Damaged();
+            Debug.Log("적 체력: " + hp);
+        }
+        // 0보다 작으면 죽음
+        else
+        {
+            m_State = EnemyState.Die;
+            Die();
+            Debug.Log("죽음..");
+        }
+    }
+
+    IEnumerator DieProcess()
+    {
+        // 캐릭터 컨트롤러 컴포넌트 비활성화
+        cc.enabled = false;
+        // 2초 대기
+        yield return new WaitForSeconds(2f);
+        // 적 제거
+        Destroy(gameObject);
+    }
+
+    void Die()
+    {
+        // 진행 중인 코루틴 중지
+        StopAllCoroutines();
+        // 죽음 코루틴 실행
+        StartCoroutine(DieProcess());
     }
 }
