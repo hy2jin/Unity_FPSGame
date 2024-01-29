@@ -21,6 +21,13 @@ public class BombAction : MonoBehaviour
     // 충돌했을 때
     private void OnCollisionEnter(Collision collision)
     {
+        Collider[] cols = Physics.OverlapSphere(transform.position, 5, 1 << 8);
+        for (int i = 0; i < cols.Length; i++)
+        {
+            cols[i].GetComponent<EnemyFSM>().HitEnemy(30);
+        }
+
+
         // 효과 프리팹 생성
         GameObject eff = Instantiate(bombEffect);
         // 효과 위치를 폭탄 위치로 이동

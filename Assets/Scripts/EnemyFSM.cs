@@ -2,6 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Net.Sockets;
 using UnityEngine;
+using UnityEngine.UI;
 
 public class EnemyFSM : MonoBehaviour
 {
@@ -26,6 +27,9 @@ public class EnemyFSM : MonoBehaviour
     Vector3 originPos;                  // 초기 위치 저장
     public float moveDistance = 20f;    // 이동 가능 범위
     public int hp = 30;                 // 적 체력
+    int maxHp;                          // 최대 체력
+    public Slider hpSlider;             // 체력 슬라이더 변수
+
 
     // Start is called before the first frame update
     void Start()
@@ -38,6 +42,7 @@ public class EnemyFSM : MonoBehaviour
         cc = GetComponent<CharacterController>();
         // 적 초기 위치 저장
         originPos = transform.position;
+        maxHp = hp;
     }
 
     // Update is called once per frame
@@ -58,6 +63,8 @@ public class EnemyFSM : MonoBehaviour
                 Return();
                 break;
         }
+
+        hpSlider.value = (float)hp / (float)maxHp;
     }
 
     void Idle()
