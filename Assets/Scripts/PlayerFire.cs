@@ -9,6 +9,7 @@ public class PlayerFire : MonoBehaviour
     public float throwPower = 15f;          // 투척 파워
     public GameObject bulletEffect;         // 총알 이펙트
     ParticleSystem ps;                      // 파티클 시스템
+    public int weaponPower = 10;          // 총알 공격력
 
     // Start is called before the first frame update
     void Start()
@@ -42,7 +43,17 @@ public class PlayerFire : MonoBehaviour
             // 레이를 발사한 후, 부딪힌 물체가 있으면
             if (Physics.Raycast(ray, out hitInfo))
             {
+                // 만약 부딪힌 대상의 레이어가 Enemy라면
+                if (hitInfo.transform.gameObject.layer == LayerMask.NameToLayer("Enemy"))
+                {
+                    // 부딪힌 대상(=Enemy)의 EnemyFSM의 HitEnemy함수 실행
+                    EnemyFSM eFSM = hitInfo.transform.GetComponent<EnemyFSM>();
+                    eFSM.HitEnemy(weaponPower);
+                }
+
                 bulletEffect.transform.position = hitInfo.point;
+                // 총알 효과를 레이가 부딭힌 지점의 법선 벡터와 일치
+                bulletEffect.transform.forward = hitInfo.normal;
                 ps.Play();
             }
         }
